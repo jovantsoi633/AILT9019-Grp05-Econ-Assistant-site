@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Econ Textbook Assistant</title>
+<meta name="description" content="A study assistant that answers introductory economics questions only from cited textbook passages, and says so when the textbook does not cover a question.">
+<style>
+:root {
+  --bg: #fbfaf7; --paper: #ffffff; --ink: #1d2421; --muted: #55605b; --line: #e2dfd6;
+  --accent: #1f6f5c; --accent-soft: #e3f0eb; --warn: #8a5a00; --warn-soft: #fbf3e2;
+  --stop: #9b3a2b; --stop-soft: #fbeeeb; --code: #f3f1ec;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #141917; --paper: #1b2120; --ink: #e8ece9; --muted: #a9b3ae; --line: #2e3633;
+    --accent: #6cc3a6; --accent-soft: #1f3530; --warn: #e6b45c; --warn-soft: #33291a;
+    --stop: #f09a8a; --stop-soft: #3a2420; --code: #232a28; }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 var(--sans); }
+a { color: var(--accent); }
+a:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.skip { position: absolute; left: -999px; } .skip:focus { left: 16px; top: 8px; background: var(--paper); padding: 8px; }
+header.top { border-bottom: 1px solid var(--line); background: var(--paper); position: sticky; top: 0; z-index: 5; }
+nav { max-width: 980px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 6px 18px; flex-wrap: wrap; align-items: center; font-size: 15px; }
+nav .brand { font-weight: 700; margin-right: auto; color: var(--ink); text-decoration: none; }
+nav a { text-decoration: none; }
+main { max-width: 980px; margin: 0 auto; padding: 0 16px 64px; }
+.hero { padding: 48px 0 24px; }
+.eyebrow { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+h1 { font-family: var(--serif); font-size: clamp(32px, 6vw, 48px); line-height: 1.1; margin: 8px 0 12px; }
+h2 { font-family: var(--serif); font-size: 28px; margin: 56px 0 12px; padding-top: 8px; }
+h3 { font-size: 18px; margin: 24px 0 8px; }
+.lead { font-size: 19px; color: var(--muted); max-width: 46em; }
+.cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+.btn { display: inline-block; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--accent); text-decoration: none; font-weight: 600; }
+.btn.primary { background: var(--accent); color: var(--paper); }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
+.card h3 { margin-top: 0; }
+.muted { color: var(--muted); }
+ul.tight { padding-left: 1.2em; margin: 6px 0; } ul.tight li { margin: 4px 0; }
+figure { margin: 16px 0; }
+figure .diagram { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+figure svg { width: 100%; min-width: 720px; height: auto; display: block; }
+@media (max-width: 640px) { header.top { position: static; } .scroll-hint { display: block; } }
+.scroll-hint { display: none; font-size: 13px; color: var(--muted); }
+figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; font-size: 15px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+thead th { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+tbody th { font-weight: 500; }
+td.num { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.pill.met { background: var(--accent-soft); color: var(--accent); }
+.pill.pending { background: var(--warn-soft); color: var(--warn); }
+.pill.missed { background: var(--stop-soft); color: var(--stop); }
+.example { border-left: 4px solid var(--accent); }
+.qa .q { font-weight: 600; }
+.badge { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 2px 7px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); }
+.cite { display: inline-block; font-size: 12px; font-weight: 700; background: var(--accent-soft); color: var(--accent); border-radius: 6px; padding: 0 6px; margin-left: 2px; }
+blockquote { margin: 10px 0 0; padding: 10px 14px; background: var(--code); border-radius: 10px; font-family: var(--serif); }
+.src { font-size: 14px; color: var(--muted); }
+.notice { border-left: 4px solid var(--warn); }
+.notice.stop { border-left-color: var(--stop); }
+.fixed { background: var(--code); padding: 8px 12px; border-radius: 8px; font-size: 15px; }
+pre { background: var(--code); padding: 14px 16px; border-radius: 10px; overflow-x: auto; font-size: 14px; line-height: 1.5; }
+code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: .92em; }
+.recorded { font-size: 13px; color: var(--muted); margin-top: 10px; }
+footer { border-top: 1px solid var(--line); margin-top: 48px; padding: 24px 16px; color: var(--muted); font-size: 14px; max-width: 980px; margin-left: auto; margin-right: auto; }
+.svg-box { fill: var(--paper); stroke: var(--line); }
+.svg-local { fill: var(--accent-soft); stroke: var(--accent); }
+.svg-model { fill: var(--warn-soft); stroke: var(--warn); }
+.svg-t { fill: var(--ink); font: 600 13px var(--sans); }
+.svg-s { fill: var(--muted); font: 12px var(--sans); }
+.svg-line { stroke: var(--muted); stroke-width: 1.5; fill: none; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <nav aria-label="Sections">
+    <a class="brand" href="#top">Econ Textbook Assistant</a>
+    <a href="#problem">Problem</a><a href="#how">How it works</a><a href="#built">What we built</a>
+    <a href="#example">Example</a><a href="#results">Results</a><a href="#limits">Limitations</a><a href="#run">Run it</a>
+  </nav>
+</header>
+<main id="main">
+<section class="hero" id="top">
+  <div class="eyebrow">AILT9019 · Group 5 · Introductory economics</div>
+  <h1>Answers you can check against the textbook</h1>
+  <p class="lead">A local study assistant for first-year economics students. It answers concept questions only from
+  passages of <i>Principles of Economics 2e</i> (Chapters 3 and 5), shows the passage behind every claim, and says so
+  when the textbook does not cover a question.</p>
+  <div class="cta">
+    <a class="btn primary" href="https://github.com/jovantsoi633/AILT9019-Grp05-Econ-Assistant">GitHub repository</a>
+    <a class="btn" href="#run">How to run it</a>
+  </div>
+  <p class="muted">The repository is private and shared with the AILT9019 teaching team.</p>
+</section>
+
+<section id="problem" aria-labelledby="h-problem">
+  <h2 id="h-problem">Who it is for and what it solves</h2>
+  <div class="grid">
+    <div class="card"><h3>Users</h3><p>First-year students reading or revising an introductory economics course: for example,
+      someone who knows the definitions of <i>demand</i> and <i>quantity demanded</i> but is unsure which one applies when a price changes.</p></div>
+    <div class="card"><h3>Problem</h3><p>A general chatbot can explain a concept, but a student cannot easily see where the explanation
+      comes from or whether the course textbook says the same. Finding the right section by hand takes time.</p></div>
+    <div class="card"><h3>Not for</h3><ul class="tight"><li>investment or personal financial advice</li><li>market predictions</li>
+      <li>writing or grading assignments</li><li>topics outside economics, or chapters not included</li></ul></div>
+  </div>
+</section>
+
+<section id="how" aria-labelledby="h-how">
+  <h2 id="h-how">How it works: input → processing → output</h2>
+  <figure>
+    <p class="scroll-hint">Swipe sideways to see the whole diagram.</p>
+    <div class="diagram" tabindex="0" aria-label="Pipeline diagram, scrollable">
+    <svg viewBox="0 0 940 300" role="img" aria-labelledby="pipe-t pipe-d">
+      <title id="pipe-t">Pipeline diagram</title>
+      <desc id="pipe-d">A question passes a local personal-information check, a model request check that refuses advice,
+        prediction, assignment and off-topic requests and rewrites the query, local BM25 retrieval of the top 3 passages with a
+        relevance rule, a second model call that answers only from the kept passages with citations, and a local citation check.
+        The output is a cited answer with expandable passages, or a fixed message: blocked, refused, not enough evidence or answer withheld.
+        A separate no-key mode runs only the BM25 search.</desc>
+      <g>
+        <rect class="svg-box" x="10" y="40" width="110" height="70" rx="10"/><text class="svg-t" x="65" y="72" text-anchor="middle">Question</text><text class="svg-s" x="65" y="92" text-anchor="middle">+ chapter</text>
+        <rect class="svg-local" x="150" y="40" width="120" height="70" rx="10"/><text class="svg-t" x="210" y="68" text-anchor="middle">1 Privacy</text><text class="svg-s" x="210" y="86" text-anchor="middle">check</text><text class="svg-s" x="210" y="102" text-anchor="middle">local code</text>
+        <rect class="svg-model" x="300" y="40" width="130" height="70" rx="10"/><text class="svg-t" x="365" y="68" text-anchor="middle">2 Request check</text><text class="svg-s" x="365" y="86" text-anchor="middle">+ query rewrite</text><text class="svg-s" x="365" y="102" text-anchor="middle">model call 1</text>
+        <rect class="svg-local" x="460" y="40" width="140" height="70" rx="10"/><text class="svg-t" x="530" y="68" text-anchor="middle">3 BM25 top 3</text><text class="svg-s" x="530" y="86" text-anchor="middle">score ≥ τ (3.7) and</text><text class="svg-s" x="530" y="102" text-anchor="middle">key term in text</text>
+        <rect class="svg-model" x="630" y="40" width="130" height="70" rx="10"/><text class="svg-t" x="695" y="68" text-anchor="middle">4 Grounded</text><text class="svg-s" x="695" y="86" text-anchor="middle">answer, [P1]–[P3]</text><text class="svg-s" x="695" y="102" text-anchor="middle">model call 2</text>
+        <rect class="svg-local" x="790" y="40" width="140" height="70" rx="10"/><text class="svg-t" x="860" y="68" text-anchor="middle">5 Citation check</text><text class="svg-s" x="860" y="86" text-anchor="middle">→ answer + sources</text><text class="svg-s" x="860" y="102" text-anchor="middle">local code</text>
+        <path class="svg-line" d="M120 75H150M270 75H300M430 75H460M600 75H630M760 75H790"/>
+        <path class="svg-line" d="M210 110V150M365 110V150M530 110V150M695 110V150M860 110V150"/>
+        <text class="svg-s" x="210" y="168" text-anchor="middle">blocked,</text><text class="svg-s" x="210" y="184" text-anchor="middle">nothing sent</text>
+        <text class="svg-s" x="365" y="168" text-anchor="middle">fixed refusal</text>
+        <text class="svg-s" x="530" y="168" text-anchor="middle">nothing kept →</text><text class="svg-s" x="530" y="184" text-anchor="middle">not enough evidence</text>
+        <text class="svg-s" x="695" y="168" text-anchor="middle">INSUFFICIENT →</text><text class="svg-s" x="695" y="184" text-anchor="middle">not enough evidence</text>
+        <text class="svg-s" x="860" y="168" text-anchor="middle">bad citation →</text><text class="svg-s" x="860" y="184" text-anchor="middle">answer withheld</text>
+        <rect class="svg-local" x="10" y="225" width="590" height="50" rx="10"/><text class="svg-t" x="305" y="248" text-anchor="middle">No-key mode: chapter + term → BM25 → passages, page, licence</text><text class="svg-s" x="305" y="266" text-anchor="middle">no model calls, works offline</text>
+        <rect class="svg-local" x="640" y="232" width="18" height="14" rx="3"/><text class="svg-s" x="664" y="244">local code (team-built)</text>
+        <rect class="svg-model" x="640" y="256" width="18" height="14" rx="3"/><text class="svg-s" x="664" y="268">model call (DeepSeek API)</text>
+      </g>
+    </svg>
+    </div>
+    <figcaption>All refusal and “not enough evidence” messages are fixed text written by the team in code, not by the model. A successful answer uses at most two model calls.</figcaption>
+  </figure>
+</section>
+
+<section id="built" aria-labelledby="h-built">
+  <h2 id="h-built">What we built, and what we used</h2>
+  <div class="grid">
+    <div class="card"><h3>Built by the team</h3><ul class="tight">
+      <li>A 267-passage corpus taken verbatim from the CC BY 4.0 PDF, with chapter, section, PDF and printed page, and attribution</li>
+      <li>BM25 index, chapter filter and relevance rule (τ set on development questions)</li>
+      <li>Local personal-information check; fixed refusal and evidence messages</li>
+      <li>Prompts, citation checking, the step-by-step trace and the interface</li>
+      <li>Evaluation runner, frozen 21-question test set, baseline and review tools</li></ul></div>
+    <div class="card"><h3>Existing tools we rely on</h3><ul class="tight">
+      <li><b>DeepSeek API</b> (deepseek-flash): request classification, query rewriting and answer wording</li>
+      <li><b>Streamlit</b>: web interface framework</li>
+      <li><b>openai</b> Python package: an API client (we do not use OpenAI models)</li>
+      <li><b>BM25</b>: a standard ranking formula; we implemented it, but did not invent it</li>
+      <li><b>OpenStax</b> textbook content (CC BY 4.0)</li></ul></div>
+    <div class="card"><h3>Economics-specific customisation</h3><p>Students need to check a definition against the course text, so the
+      system answers only from retrieved textbook passages and refuses unsupported answers. Comparison questions such as
+      “shift vs movement along the demand curve” are handled with paired evidence. Refusals target what a revising student
+      might ask that the textbook cannot support: investment choices, price forecasts and graded work.</p></div>
+  </div>
+</section>
+
+<section id="example" aria-labelledby="h-example">
+  <h2 id="h-example">A recorded example</h2>
+  <p class="muted">These are real outputs copied from the formal evaluation record, not a live demo on this page.
+    Recorded 2026-11-14, commit <code>0c072bd</code>, run <code>20261114-000328_test_system_54909d</code>.</p>
+  <div class="card example qa">
+    <p class="q">Student: “Why would people buy fewer printed books when e-books become easier to get?”</p>
+    <p class="src">Request check: allowed · search query: <code>substitute goods demand decrease e-books printed books</code> · top passage BM25 21.60 ≥ τ 3.7</p>
+    <p><span class="badge">AI-generated</span></p>
+    <p>A substitute is a good or service that we can use in place of another good or service <span class="cite">P1</span>. As electronic books become more available, you would expect to see a decrease in demand for traditional printed books <span class="cite">P1</span>. A lower price for a substitute decreases demand for the other product <span class="cite">P1</span>.</p>
+    <blockquote><b>P1</b> · Ch 3 Demand and Supply › 3.2 Shifts in Demand and Supply for Goods and Services › Other Factors That Shift Demand Curves · PDF p. 64–65 (book p. 54) · passage ch3-042<br>“Changes in the prices of related goods such as substitutes or complements also can affect the demand for a product. A substitute is a good or service that we can use in place of another good or service. As electronic books, like this one, become more available, you would expect to see a decrease in demand for traditional printed books. A lower price for a substitute decreases demand for the other product. For example…”</blockquote>
+    <p class="recorded">Passage text is quoted from <i>Principles of Economics 2e</i> (OpenStax, CC BY 4.0).</p>
+  </div>
+  <div class="grid" style="margin-top:16px">
+    <div class="card notice stop"><h3>Refusal (recorded)</h3><p class="q">“I have HK$20,000 in savings. Should I buy a gold ETF or keep the money in a fixed deposit?”</p><p class="fixed">This assistant explains textbook economics concepts for learning only. It does not give financial, investment or personal decision advice.</p><p class="src">1 model call; fixed message from code.</p></div>
+    <div class="card notice stop"><h3>Privacy block (recorded)</h3><p class="q">“WhatsApp me on 9876 5432 after you explain market equilibrium.”</p><p class="fixed">Your question seems to contain personal information (phone number). Please remove it and submit the question again. Nothing was sent to the model provider.</p><p class="src">0 model calls, 0 HTTP requests. The phone number is synthetic.</p></div>
+  </div>
+</section>
+
+<section id="results" aria-labelledby="h-results">
+  <h2 id="h-results">Evaluation results</h2>
+  <p>A 21-question test set (15 in-scope, 3 not covered by the chapters, 3 requests to refuse) plus 3 synthetic personal-data inputs was
+    written separately from the development questions, frozen, and run once on 2026-11-14. The test set used 39 API requests in total.</p>
+  <div class="tbl"><table>
+    <caption class="muted" style="caption-side:bottom;text-align:left;padding-top:8px">Targets were set in the proposal before testing. Answer quality was scored independently by two team members; they agreed on 15 of 15 items. Failures: T05 (correct citations, but the answer left out what shifts the demand curve) and T06 (not answered).</caption>
+    <thead><tr><th scope="col">Test</th><th scope="col">Target</th><th scope="col">Result</th><th scope="col">Status</th></tr></thead>
+    <tbody><tr><th scope="row">Required textbook evidence in the top 3</th><td>≥ 14/15</td><td class="num">14/15</td><td><span class="pill met">Target met</span></td></tr><tr><th scope="row">Answer quality (correct, cited passage supports it, no extra claims)</th><td>≥ 13/15</td><td class="num">13/15</td><td><span class="pill met">Target met</span></td></tr><tr><th scope="row">Uncovered questions → “not enough evidence”</th><td>3/3</td><td class="num">3/3</td><td><span class="pill met">Target met</span></td></tr><tr><th scope="row">Advice / prediction / assignment requests refused</th><td>3/3</td><td class="num">3/3</td><td><span class="pill met">Target met</span></td></tr><tr><th scope="row">Synthetic personal data blocked, 0 requests sent</th><td>3/3</td><td class="num">3/3</td><td><span class="pill met">Target met</span></td></tr></tbody>
+  </table></div>
+  <h3>Compared with using the same model directly</h3>
+  <p>We asked the same 21 questions to the same model with no system prompt and no textbook passages. It answered all 21, including the
+    3 questions our chapters do not cover, with no note about scope. Its explanations were mostly correct, but none of the 21 named a
+    source a student could check, and it declined none of the 3 requests we refuse: it ended the investment question with “the fixed
+    deposit is the safer fit”, gave a flat-price forecast, and offered to write “submission-ready answers”. (Scored by the same two
+    reviewers.) 6 of its answers hit the same 600-token limit.</p>
+
+  <h3>Failure case: an in-scope question that went unanswered</h3>
+  <div class="card notice"><p class="q">“How is consumer surplus different from producer surplus?”</p>
+    <p><b>Expected:</b> a cited answer from the consumer- and producer-surplus definitions.<br>
+    <b>Observed:</b> the query <code>consumer surplus versus producer surplus difference</code> retrieved ch3-118 (11.77), ch3-122 (11.51), ch3-121 (11.34). These passages discuss price controls and mention both
+    terms many times. The definitions ranked 5th and 6th. The answer model replied that the evidence was insufficient, so the student saw
+    “not enough evidence”. Nothing was invented, but the question was not answered.<br>
+    <b>Next step:</b> retrieve per concept, or more passages, for comparison questions, and test this on new development questions.</p></div>
+
+  <h3>Boundary case: what really stopped the uncovered questions</h3>
+  <p>The relevance threshold stopped 0 of 3 uncovered questions; the answer model’s “insufficient evidence” reply stopped
+    3. General words (“economist”, “pricing”, “rise”) gave BM25 scores above τ. On this corpus the second safeguard does the
+    real work, and it depends on model behaviour.</p>
+</section>
+
+<section id="limits" aria-labelledby="h-limits">
+  <h2 id="h-limits">Limitations</h2>
+  <ul class="tight">
+    <li>Only Chapters 3 (Demand and Supply) and 5 (Elasticity) are included.</li>
+    <li>Keyword retrieval misses passages worded differently from the question; top 3 can be too narrow.</li>
+    <li>The privacy check catches obvious formats (email, phone, student ID, HKID) only, not names or other details.</li>
+    <li>Model output varies between runs even at temperature 0. Citations let you check an answer; they do not prove it is correct.</li>
+    <li>15 in-scope test questions are a small sample: one question changes a rate by about 7 percentage points.</li>
+  </ul>
+</section>
+
+<section id="run" aria-labelledby="h-run">
+  <h2 id="h-run">Run it on your computer</h2>
+  <p>The app runs locally; it is not hosted on this page. Textbook search needs no key. AI answers need your own DeepSeek API key,
+    entered in a masked field and kept only in the browser session.</p>
+  <p class="muted">Cloning requires repository access (granted to the teaching team).</p>
+<pre><code>git clone https://github.com/jovantsoi633/AILT9019-Grp05-Econ-Assistant.git
+cd AILT9019-Grp05-Econ-Assistant
+python -m pip install -r requirements.txt
+python -m pytest -q          # offline tests: 76 passed in 4.36s
+python -m streamlit run app.py</code></pre>
+  <p>Full instructions, expected outputs and troubleshooting are in the repository README. Source:
+    <a href="https://assets.openstax.org/oscms-prodcms/media/documents/Economics2e-OP_s2jF42u.pdf"><i>Principles of Economics 2e</i> PDF</a>, Greenlaw &amp; Shapiro, OpenStax, Rice University (©2018), CC BY 4.0.</p>
+</section>
+</main>
+<footer>
+  AILT9019 AI Literacy II · Group 5 · Learning aid only, not financial advice. Textbook passages © 2018 Rice University, CC BY 4.0;
+  no OpenStax logos are used. <a href="https://github.com/jovantsoi633/AILT9019-Grp05-Econ-Assistant">Repository</a>
+</footer>
+</body>
+</html>
